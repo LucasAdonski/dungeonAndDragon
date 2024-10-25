@@ -42,7 +42,6 @@ fun CriarPersonagemScreen(
     var nome by remember { mutableStateOf("") }
     var racaSelecionada by remember { mutableStateOf("Selecione a raça") }
 
-    // Lista das raças disponíveis
     val racas = listOf(
         "Elfo", "Anão", "Alto Elfo", "Anão da colina", "Draconato",
         "Drow", "Elfo da floresta", "Gnomo", "Gnomo da floresta",
@@ -51,19 +50,17 @@ fun CriarPersonagemScreen(
     )
 
     Column(modifier = modifier.fillMaxSize().padding(16.dp)) {
-        // Texto explicativo antes do campo de entrada
         Text(
             text = "Selecione o nome do seu personagem:",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.2f), // Deixa o texto em negrito
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.2f),
             modifier = Modifier
-                .padding(top = 30.dp, bottom = 20.dp) // Adiciona espaçamento acima e abaixo do texto
-                .fillMaxWidth() // Faz o texto ocupar a largura total
-                .wrapContentWidth(Alignment.CenterHorizontally) // Centraliza horizontalmente
+                .padding(top = 30.dp, bottom = 20.dp)
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.CenterHorizontally)
         )
 
-        // Campo de texto para o nome do personagem
         TextField(
             value = nome,
             onValueChange = { nome = it },
@@ -72,25 +69,23 @@ fun CriarPersonagemScreen(
         )
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Título para a seleção de raça
         Text(
             text = "Selecione a raça:",
             style = MaterialTheme.typography.bodyMedium.copy(
                 fontWeight = FontWeight.Bold,
-                fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.2f), // Deixa o texto em negrito
+                fontSize = MaterialTheme.typography.bodyMedium.fontSize * 1.2f),
             modifier = Modifier
-                .padding(top = 10.dp, bottom = 20.dp) // Adiciona espaçamento acima e abaixo do texto
-                .fillMaxWidth() // Faz o texto ocupar a largura total
-                .wrapContentWidth(Alignment.CenterHorizontally) // Centraliza horizontalmente
+                .padding(top = 10.dp, bottom = 20.dp)
+                .fillMaxWidth()
+                .wrapContentWidth(Alignment.CenterHorizontally)
         )
 
-        // Divisão de 2 para 2
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly // Distribui as colunas igualmente
+            horizontalArrangement = Arrangement.SpaceEvenly
         ) {
             Column(modifier = Modifier.weight(1f)) {
-                // Primeira metade dos botões
+
                 for (raca in racas.take(racas.size / 2)) {
                     Button(
                         onClick = {
@@ -100,34 +95,33 @@ fun CriarPersonagemScreen(
                             containerColor = if (racaSelecionada == raca) MaterialTheme.colorScheme.primary else Color.LightGray // Cor de fundo
                         ),
                         modifier = Modifier
-                            .fillMaxWidth() // Faz com que o botão ocupe a largura total
-                            .padding(vertical = 4.dp) // Espaçamento vertical entre os botões
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     ) {
                         Text(
                             text = raca,
-                            color = if (racaSelecionada == raca) Color.White else Color.Black // Cor do texto
+                            color = if (racaSelecionada == raca) Color.White else Color.Black
                         )
                     }
                 }
             }
 
             Column(modifier = Modifier.weight(1f)) {
-                // Segunda metade dos botões
                 for (raca in racas.drop(racas.size / 2)) {
                     Button(
                         onClick = {
                             racaSelecionada = raca
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (racaSelecionada == raca) MaterialTheme.colorScheme.primary else Color.LightGray // Cor de fundo
+                            containerColor = if (racaSelecionada == raca) MaterialTheme.colorScheme.primary else Color.LightGray
                         ),
                         modifier = Modifier
-                            .fillMaxWidth() // Faz com que o botão ocupe a largura total
-                            .padding(vertical = 4.dp) // Espaçamento vertical entre os botões
+                            .fillMaxWidth()
+                            .padding(vertical = 4.dp)
                     ) {
                         Text(
                             text = raca,
-                            color = if (racaSelecionada == raca) Color.White else Color.Black // Cor do texto
+                            color = if (racaSelecionada == raca) Color.White else Color.Black
                         )
                     }
                 }

@@ -12,6 +12,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.gameded.personagem.Personagem
 import androidx.compose.ui.platform.LocalContext
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
+import android.content.Context
+import android.content.pm.PackageManager
+import android.os.Build
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 
 class SecondActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -28,6 +37,7 @@ class SecondActivity : ComponentActivity() {
             }
         }
     }
+
 }
 
 @Composable
@@ -43,7 +53,6 @@ fun DistribuirPontosScreen(personagem: Personagem) {
             .padding(16.dp),
         verticalArrangement = Arrangement.SpaceBetween
     ) {
-        // Título
         Text(
             text = "Distribua os pontos do seu personagem",
             style = MaterialTheme.typography.titleMedium,
@@ -78,7 +87,7 @@ fun DistribuirPontosScreen(personagem: Personagem) {
             style = MaterialTheme.typography.titleMedium,
             color = MaterialTheme.colorScheme.primary,
             modifier = Modifier
-                .padding(bottom = 16.dp) // Espaçamento abaixo dos pontos restantes
+                .padding(bottom = 16.dp)
                 .align(Alignment.CenterHorizontally)
         )
 
