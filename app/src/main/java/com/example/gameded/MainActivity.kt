@@ -15,26 +15,32 @@ import com.example.gameded.personagem.*
 import android.content.Intent
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.viewModels
 
 
 class MainActivity : ComponentActivity() {
+    private val personagemViewModel: PersonagemViewModel by viewModels()
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            MyApp()
+            MyApp(personagemViewModel)
         }
     }
 }
 
 @Composable
-fun MyApp() {
-    CriarPersonagemScreen(onCharacterCreated = { personagem ->
+fun MyApp(personagemViewModel: PersonagemViewModel) {
+    CriarPersonagemScreen(
+        personagemViewModel = personagemViewModel,
+        onCharacterCreated = { personagem ->
         println("Personagem criado: Nome=${personagem.nome}, Raça=${personagem.raca}")
     })
 }
 
 @Composable
 fun CriarPersonagemScreen(
+    personagemViewModel: PersonagemViewModel,
     modifier: Modifier = Modifier,
     onCharacterCreated: (Personagem) -> Unit
 ) {
@@ -43,7 +49,7 @@ fun CriarPersonagemScreen(
     var racaSelecionada by remember { mutableStateOf("Selecione a raça") }
 
     val racas = listOf(
-        "Elfo", "Anão", "Alto Elfo", "Anão da colina", "Draconato",
+        "Elfo", "Anão", "Alto Elfo", "Anão da colina","Anão da montanha", "Draconato",
         "Drow", "Elfo da floresta", "Gnomo", "Gnomo da floresta",
         "Gnomo das rochas", "Halfling", "Halfling pés-leves",
         "Halfling robusto", "Humano", "Meio Elfo", "Meio Orc", "Tiefling"
@@ -92,7 +98,7 @@ fun CriarPersonagemScreen(
                             racaSelecionada = raca
                         },
                         colors = ButtonDefaults.buttonColors(
-                            containerColor = if (racaSelecionada == raca) MaterialTheme.colorScheme.primary else Color.LightGray // Cor de fundo
+                            containerColor = if (racaSelecionada == raca) MaterialTheme.colorScheme.primary else Color.LightGray
                         ),
                         modifier = Modifier
                             .fillMaxWidth()
@@ -135,10 +141,14 @@ fun CriarPersonagemScreen(
                     this.raca = getRacaFromString(racaSelecionada)
                 }
                 if (personagem.nome.isNotEmpty() && personagem.raca != null) {
-                    val intent = Intent(context, SecondActivity::class.java).apply {
-                        putExtra("personagem", personagem)
+                    val personagemEntity = personagem.toEntity()
+                    personagemViewModel.insert(personagemEntity) { idInserido ->
+                        val intent = Intent(context, SecondActivity::class.java).apply {
+                            putExtra("personagem_id", idInserido.toInt())
+                        }
+                        context.startActivity(intent)
                     }
-                    context.startActivity(intent)
+                    onCharacterCreated(personagem)
                 } else {
                     Toast.makeText(context, "Por favor, insira um nome e selecione uma raça.", Toast.LENGTH_SHORT).show()
                 }
@@ -150,50 +160,5 @@ fun CriarPersonagemScreen(
     }
 }
 
-fun getRacaFromString(raca: String): Raca? {
-    return when (raca.lowercase().trim()) {
-        "elfo" -> Elfo()
-        "anão" -> Anao()
-        "alto elfo" -> altoElfo()
-        "anão da colina" -> anaoColina()
-        "draconato" -> Draconato()
-        "drow" -> Drow()
-        "elfo da floresta" -> elfoFloresta()
-        "gnomo" -> Gnomo()
-        "gnomo da floresta" -> gnomoFloresta()
-        "gnomo das rochas" -> gnomoRochas()
-        "halfling" -> Halfling()
-        "halfling pés-leves" -> halflingPesLeves()
-        "halfling robusto" -> halflingRobusto()
-        "humano" -> Humano()
-        "meio elfo" -> meioElfo()
-        "meio orc" -> meioOrc()
-        "tiefling" -> Tiefling()
-        else -> null
-    }
-}
-
-fun Raca.getNomeFormatado(): String {
-    return when (this) {
-        is Elfo -> "Elfo"
-        is Anao -> "Anão"
-        is altoElfo -> "Alto Elfo"
-        is anaoColina -> "Anão da Colina"
-        is Draconato -> "Draconato"
-        is Drow -> "Drow"
-        is elfoFloresta -> "Elfo da Floresta"
-        is Gnomo -> "Gnomo"
-        is gnomoFloresta -> "Gnomo da Floresta"
-        is gnomoRochas -> "Gnomo das Rochas"
-        is Halfling -> "Halfling"
-        is halflingPesLeves -> "Halfling Pés-Leves"
-        is halflingRobusto -> "Halfling Robusto"
-        is Humano -> "Humano"
-        is meioElfo -> "Meio Elfo"
-        is meioOrc -> "Meio Orc"
-        is Tiefling -> "Tiefling"
-        else -> "Raça desconhecida"
-    }
-}
 
 

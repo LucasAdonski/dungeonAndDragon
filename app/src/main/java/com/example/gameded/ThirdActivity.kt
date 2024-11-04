@@ -8,8 +8,10 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -24,28 +26,40 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
-import com.example.gameded.personagem.Personagem
+import com.example.gameded.personagem.*
 
 class ThirdActivity : ComponentActivity() {
 
     private val CHANNEL_ID = "personagem_channel"
     private val NOTIFICATION_ID = 1
     private val NOTIFICATION_PERMISSION_REQUEST_CODE = 1001
+    private val personagemViewModel: PersonagemViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        val personagem = intent.getSerializableExtra("personagem") as? Personagem
-        personagem?.aplicarBonus()
+        val personagemId = intent.getIntExtra("personagem_id", -1)
 
-        setContent {
-            if (personagem != null) {
-                MostrarStatusScreen(personagem)
-            } else {
+        if (personagemId != -1) {
+            personagemViewModel.getPersonagemById(personagemId).observe(this) { personagemEntity ->
+                if (personagemEntity != null) {
+                    val personagem = personagemEntity.toPersonagem()
+                    setContent {
+                        val context = LocalContext.current
+                        MostrarStatusScreen(personagem, personagemViewModel, context, personagemEntity.id)
+                    }
+                } else {
+                    setContent {
+                        Text("Erro ao carregar personagem")
+                    }
+                }
+            }
+        } else {
+            setContent {
                 Text("Erro ao carregar personagem")
             }
-            createNotificationChannel()
         }
+        createNotificationChannel()
     }
 
     private fun createNotificationChannel() {
@@ -98,8 +112,7 @@ class ThirdActivity : ComponentActivity() {
 }
 
 @Composable
-fun MostrarStatusScreen(personagem: Personagem) {
-    val context = LocalContext.current
+fun MostrarStatusScreen(personagem: Personagem, personagemViewModel: PersonagemViewModel, context: Context, personagemId: Int) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -120,18 +133,83 @@ fun MostrarStatusScreen(personagem: Personagem) {
 
         StatusText("Nome: ", personagem.nome, fontSize = 18.sp)
         StatusText("Raça: ", personagem.raca?.getNomeFormatado() ?: "Desconhecida", fontSize = 18.sp)
-
         StatusText("Força: ", "${personagem.forca} (Modificador: ${personagem.calcularModificador(personagem.forca)})", fontSize = 18.sp)
         StatusText("Destreza: ", "${personagem.destreza} (Modificador: ${personagem.calcularModificador(personagem.destreza)})", fontSize = 18.sp)
         StatusText("Constituição: ", "${personagem.constituicao} (Modificador: ${personagem.calcularModificador(personagem.constituicao)})", fontSize = 18.sp)
         StatusText("Inteligência: ", "${personagem.inteligencia} (Modificador: ${personagem.calcularModificador(personagem.inteligencia)})", fontSize = 18.sp)
         StatusText("Sabedoria: ", "${personagem.sabedoria} (Modificador: ${personagem.calcularModificador(personagem.sabedoria)})", fontSize = 18.sp)
         StatusText("Carisma: ", "${personagem.carisma} (Modificador: ${personagem.calcularModificador(personagem.carisma)})", fontSize = 18.sp)
-
-        val vidaTotal = personagem.pontosDeVida + personagem.calcularModificador(personagem.constituicao)
-        StatusText("Pontos de Vida: ", vidaTotal.toString(), fontSize = 18.sp)
+        StatusText("Pontos de Vida: ", "${personagem.pontosDeVida}", fontSize = 18.sp)
 
         Spacer(modifier = Modifier.height(80.dp))
+
+        Button(
+            onClick = {
+                personagemViewModel.deleteAll()
+                Toast.makeText(context, "Todos os personagens foram excluídos.", Toast.LENGTH_SHORT).show()
+
+                val intent = Intent(context, SplashActivity::class.java)
+                context.startActivity(intent)
+                (context as? ThirdActivity)?.finish()
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 60.dp)
+        ) {
+            Text("Excluir Todos os Personagens")
+        }
+
+        Button(
+            onClick = {
+                personagemViewModel.getPersonagemById(personagemId).observeForever { personagemEntity ->
+                    if (personagemEntity != null) {
+                        personagemViewModel.delete(personagemEntity)
+                        Toast.makeText(context, "Personagem excluído.", Toast.LENGTH_SHORT).show()
+                        val intent = Intent(context, SplashActivity::class.java)
+                        context.startActivity(intent)
+                        (context as? ThirdActivity)?.finish()
+                    } else {
+                        Toast.makeText(context, "Nenhum personagem encontrado para excluir.", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 60.dp)
+        ) {
+            Text("Excluir Personagem")
+        }
+
+        Button(
+            onClick = {
+                personagemViewModel.allPersonagens.observeForever { listaPersonagens ->
+                    if (listaPersonagens.isNotEmpty()) {
+                        listaPersonagens.forEach { personagemEntity ->
+                            println("Personagem: ${personagemEntity.nome}, Raça: ${personagemEntity.nomeRaca}, Força: ${personagemEntity.forca}, Destreza: ${personagemEntity.destreza}, Constituição: ${personagemEntity.constituicao}, Inteligência: ${personagemEntity.inteligencia}, Sabedoria: ${personagemEntity.sabedoria}, Carisma: ${personagemEntity.carisma}, Pontos de Vida: ${personagemEntity.pontosDeVida}")
+                        }
+                    } else {
+                        println("Nenhum personagem encontrado no banco de dados.")
+                    }
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 60.dp)
+        ) {
+            Text("Listar Personagens")
+        }
+
+        Button(
+            onClick = {
+                val intent = Intent(context, SplashActivity::class.java)
+                context.startActivity(intent)
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 60.dp)
+        ) {
+            Text("Voltar ao início")
+        }
 
         Button(
             onClick = {
